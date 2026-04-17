@@ -1,7 +1,6 @@
-import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -34,14 +33,17 @@ def billing_page(request: Request, db: Session = Depends(get_db)):
 
 
 @router.post("/generate", response_class=HTMLResponse)
-async def generate_bill_view(request: Request, db: Session = Depends(get_db)):
+async def generate_bill_view(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     form_data = await request.form()
 
     customer_email = form_data.get("customer_email", "").strip()
     if not customer_email:
         raise HTTPException(status_code=400, detail="Customer email is required")
 
-    # Parse product items from form
     items = []
     index = 0
     while True:
@@ -56,7 +58,6 @@ async def generate_bill_view(request: Request, db: Session = Depends(get_db)):
     if not items:
         raise HTTPException(status_code=400, detail="At least one product is required")
 
-    # Parse denominations
     denominations_received = {}
     for denom_value in settings.DENOMINATIONS:
         count_str = form_data.get(f"denom_{denom_value}", "0")
@@ -66,15 +67,11 @@ async def generate_bill_view(request: Request, db: Session = Depends(get_db)):
 
     cash_paid = float(form_data.get("cash_paid", 0))
 
-    try:
-        result = generate_bill(db, customer_email, items, denominations_received, cash_paid)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    result = generate_bill(db, customer_email, items, denominations_received, cash_paid)
 
     invoice = result["invoice"]
     balance_denoms = result["balance_denominations"]
 
-    # Render the bill result page
     response_html = templates.TemplateResponse(
         "bill_result.html",
         {
@@ -84,12 +81,6 @@ async def generate_bill_view(request: Request, db: Session = Depends(get_db)):
         },
     )
 
-    # Send email asynchronously in background
-    invoice_email_html = templates.get_template("invoice_email.html").render(
-        invoice=invoice, balance_denominations=balance_denoms
-    )
-    asyncio.get_event_loop().run_in_executor(
-        None, send_invoice_email, customer_email, invoice_email_html
-    )
+    background_tasks.add_task(send_invoice_email, customer_email, invoice, balance_denoms)
 
     return response_html

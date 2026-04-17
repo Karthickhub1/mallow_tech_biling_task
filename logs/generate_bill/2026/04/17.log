@@ -1,0 +1,11 @@
+2026-04-17 20:23:23,472 [INFO] --------------- start generate ---------------
+2026-04-17 20:23:23,472 [INFO] input customer=test@example.com items=[{'product_id': '__missing__', 'quantity': 1}] denominations={} cash_paid=100.0
+2026-04-17 20:23:23,566 [ERROR] failure: Product '__missing__' not found
+Traceback (most recent call last):
+  File "D:\fastapi-app\mallow_tech_task1\app\services\billing_service.py", line 33, in generate_bill
+    result = _generate_bill_impl(
+             ^^^^^^^^^^^^^^^^^^^^
+  File "D:\fastapi-app\mallow_tech_task1\app\services\billing_service.py", line 65, in _generate_bill_impl
+    raise ValueError(f"Product '{item['product_id']}' not found")
+ValueError: Product '__missing__' not found
+2026-04-17 20:23:23,567 [INFO] --------------- end generate ---------------
