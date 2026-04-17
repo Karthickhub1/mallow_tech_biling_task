@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Bill Result{% endblock %}
+
+{% block content %}
+<h2>Billing Page</h2>
+
+<div class="form-group">
+    <label>Customer Email</label>
+    <span>{{ invoice.customer_email }}</span>
+</div>
+
+<hr>
+
+<h3>Bill Section</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Product ID</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Purchase Price</th>
+            <th>Tax % for Item</th>
+            <th>Tax Payable for Item</th>
+            <th>Total Price of the Item</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in invoice.items %}
+        <tr>
+            <td>{{ item.product_id }}</td>
+            <td>{{ "%.2f"|format(item.unit_price) }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ "%.2f"|format(item.purchase_price) }}</td>
+            <td>{{ "%.2f"|format(item.tax_percentage) }}%</td>
+            <td>{{ "%.2f"|format(item.tax_amount) }}</td>
+            <td>{{ "%.2f"|format(item.total_price) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="summary-table">
+    <tr><td>Total price without tax:</td><td>{{ "%.2f"|format(invoice.total_without_tax) }}</td></tr>
+    <tr><td>Total tax payable:</td><td>{{ "%.2f"|format(invoice.total_tax) }}</td></tr>
+    <tr><td>Net price of the purchased item:</td><td>{{ "%.2f"|format(invoice.net_price) }}</td></tr>
+    <tr><td>Rounded down value of the purchased items net price:</td><td>{{ "%.2f"|format(invoice.rounded_net_price) }}</td></tr>
+    <tr><td>Balance payable to the customer:</td><td>{{ "%.2f"|format(invoice.balance) }}</td></tr>
+</table>
+
+<hr>
+
+<h3>Balance Denomination:</h3>
+{% if balance_denominations %}
+<table style="width: 200px; margin: 0 auto;">
+    {% for value, count in balance_denominations.items() %}
+    <tr><td style="text-align: right; font-weight: bold;">{{ value }}:</td><td>{{ count }}</td></tr>
+    {% endfor %}
+</table>
+{% else %}
+<p style="text-align: center;">No change to return.</p>
+{% endif %}
+
+<div class="actions">
+    <a href="/billing" class="btn btn-primary">New Bill</a>
+    <a href="/history?email={{ invoice.customer_email }}" class="btn">View History</a>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head><style>
+    body { font-family: Arial, sans-serif; }
+    table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+    th, td { border: 1px solid #ccc; padding: 6px; text-align: center; }
+    th { background: #f0f0f0; }
+</style></head>
+<body>
+<h2>Invoice - Billing System</h2>
+<p><strong>Customer Email:</strong> {{ invoice.customer_email }}</p>
+<p><strong>Date:</strong> {{ invoice.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+
+<table>
+    <tr>
+        <th>Product ID</th><th>Unit Price</th><th>Qty</th>
+        <th>Purchase Price</th><th>Tax %</th><th>Tax Amount</th><th>Total</th>
+    </tr>
+    {% for item in invoice.items %}
+    <tr>
+        <td>{{ item.product_id }}</td>
+        <td>{{ "%.2f"|format(item.unit_price) }}</td>
+        <td>{{ item.quantity }}</td>
+        <td>{{ "%.2f"|format(item.purchase_price) }}</td>
+        <td>{{ "%.2f"|format(item.tax_percentage) }}%</td>
+        <td>{{ "%.2f"|format(item.tax_amount) }}</td>
+        <td>{{ "%.2f"|format(item.total_price) }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><strong>Total without tax:</strong> {{ "%.2f"|format(invoice.total_without_tax) }}</p>
+<p><strong>Total tax:</strong> {{ "%.2f"|format(invoice.total_tax) }}</p>
+<p><strong>Net price:</strong> {{ "%.2f"|format(invoice.net_price) }}</p>
+<p><strong>Rounded net price:</strong> {{ "%.2f"|format(invoice.rounded_net_price) }}</p>
+<p><strong>Cash paid:</strong> {{ "%.2f"|format(invoice.cash_paid) }}</p>
+<p><strong>Balance:</strong> {{ "%.2f"|format(invoice.balance) }}</p>
+
+{% if balance_denominations %}
+<h3>Balance Denomination:</h3>
+<ul>
+    {% for value, count in balance_denominations.items() %}
+    <li>{{ value }}: {{ count }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<p>Thank you for your purchase!</p>
+</body>
+</html>

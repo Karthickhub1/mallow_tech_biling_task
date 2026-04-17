@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<h2>Products Management</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Product ID</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Tax %</th>
+            <th>Stock</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in products %}
+        <tr>
+            <td>{{ p.product_id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ "%.2f"|format(p.price) }}</td>
+            <td>{{ p.tax_percentage }}%</td>
+            <td>{{ p.available_stocks }}</td>
+            <td>
+                <button onclick="deleteProduct('{{ p.product_id }}')" class="btn" style="padding: 2px 8px;">Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+        {% if not products %}
+        <tr><td colspan="6">No products found. Add one below.</td></tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<hr>
+<h3>Add New Product</h3>
+<form id="addProductForm">
+    <div class="form-group">
+        <label>Product ID</label>
+        <input type="text" id="p_product_id" required>
+    </div>
+    <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="p_name" required>
+    </div>
+    <div class="form-group">
+        <label>Price</label>
+        <input type="number" id="p_price" step="0.01" min="0" required>
+    </div>
+    <div class="form-group">
+        <label>Tax Percentage</label>
+        <input type="number" id="p_tax" step="0.01" min="0" required>
+    </div>
+    <div class="form-group">
+        <label>Available Stocks</label>
+        <input type="number" id="p_stocks" min="0" required>
+    </div>
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Add Product</button>
+    </div>
+</form>
+<p id="msg" class="error"></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        product_id: document.getElementById('p_product_id').value,
+        name: document.getElementById('p_name').value,
+        price: parseFloat(document.getElementById('p_price').value),
+        tax_percentage: parseFloat(document.getElementById('p_tax').value),
+        available_stocks: parseInt(document.getElementById('p_stocks').value),
+    };
+    const res = await fetch('/products/api', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    if (res.ok) {
+        window.location.reload();
+    } else {
+        const err = await res.json();
+        document.getElementById('msg').textContent = err.detail || 'Error adding product';
+    }
+});
+
+async function deleteProduct(pid) {
+    if (!confirm('Delete this product?')) return;
+    const res = await fetch(`/products/api/${pid}`, { method: 'DELETE' });
+    if (res.ok) window.location.reload();
+}
+</script>
+{% endblock %}

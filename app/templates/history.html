@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}Purchase History{% endblock %}
+
+{% block content %}
+<h2>Purchase History</h2>
+
+<form method="GET" action="/history/search" style="text-align: center; margin-bottom: 20px;">
+    <label for="email">Customer Email:</label>
+    <input type="email" name="email" id="email" value="{{ email }}" placeholder="Enter email" required>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+{% if invoices is not none %}
+    {% if invoices %}
+    <h3>Invoices for {{ email }}</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Invoice #</th>
+                <th>Date</th>
+                <th>Net Price</th>
+                <th>Cash Paid</th>
+                <th>Balance</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inv in invoices %}
+            <tr style="{% if selected and selected.id == inv.id %}background: #e8f5e9;{% endif %}">
+                <td>{{ inv.id }}</td>
+                <td>{{ inv.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ "%.2f"|format(inv.rounded_net_price) }}</td>
+                <td>{{ "%.2f"|format(inv.cash_paid) }}</td>
+                <td>{{ "%.2f"|format(inv.balance) }}</td>
+                <td><a href="/history/invoice/{{ inv.id }}?email={{ email }}" class="btn" style="padding: 2px 8px;">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="text-align: center;">No purchases found for this email.</p>
+    {% endif %}
+{% endif %}
+
+{% if selected %}
+<hr>
+<h3>Invoice #{{ selected.id }} Details</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Product ID</th>
+            <th>Product Name</th>
+            <th>Unit Price</th>
+            <th>Quantity</th>
+            <th>Purchase Price</th>
+            <th>Tax %</th>
+            <th>Tax Amount</th>
+            <th>Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in selected.items %}
+        <tr>
+            <td>{{ item.product_id }}</td>
+            <td>{{ item.product_name }}</td>
+            <td>{{ "%.2f"|format(item.unit_price) }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ "%.2f"|format(item.purchase_price) }}</td>
+            <td>{{ "%.2f"|format(item.tax_percentage) }}%</td>
+            <td>{{ "%.2f"|format(item.tax_amount) }}</td>
+            <td>{{ "%.2f"|format(item.total_price) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="summary-table">
+    <tr><td>Total without tax:</td><td>{{ "%.2f"|format(selected.total_without_tax) }}</td></tr>
+    <tr><td>Total tax:</td><td>{{ "%.2f"|format(selected.total_tax) }}</td></tr>
+    <tr><td>Net price:</td><td>{{ "%.2f"|format(selected.net_price) }}</td></tr>
+    <tr><td>Rounded net price:</td><td>{{ "%.2f"|format(selected.rounded_net_price) }}</td></tr>
+    <tr><td>Cash paid:</td><td>{{ "%.2f"|format(selected.cash_paid) }}</td></tr>
+    <tr><td>Balance:</td><td>{{ "%.2f"|format(selected.balance) }}</td></tr>
+</table>
+{% endif %}
+{% endblock %}

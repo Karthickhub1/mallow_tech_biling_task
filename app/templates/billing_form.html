@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Billing Page{% endblock %}
+
+{% block content %}
+<h2>Billing Page</h2>
+
+<form method="POST" action="/billing/generate" id="billingForm">
+    <div class="form-group">
+        <label for="customer_email">Customer Email</label>
+        <input type="email" id="customer_email" name="customer_email" placeholder="Email ID" required>
+    </div>
+
+    <hr>
+
+    <div style="text-align: right; margin-bottom: 10px;">
+        <button type="button" onclick="addProductRow()">Add New</button>
+    </div>
+
+    <h3>Bill Section</h3>
+    <div id="product-rows">
+        <div class="form-group product-row">
+            <label>Product ID</label>
+            <input type="text" name="product_id_0" placeholder="Product ID" required list="product-list">
+            <label style="width: auto; margin-left: 10px;">Quantity</label>
+            <input type="number" name="quantity_0" placeholder="Quantity" min="1" value="1" required style="width: 80px;">
+            <button type="button" onclick="removeRow(this)" style="margin-left: 5px;">X</button>
+        </div>
+    </div>
+
+    <datalist id="product-list">
+        {% for p in products %}
+        <option value="{{ p.product_id }}">{{ p.name }} (Stock: {{ p.available_stocks }}, Price: {{ p.price }})</option>
+        {% endfor %}
+    </datalist>
+
+    <hr>
+
+    <h3>Denominations</h3>
+    <table style="width: 300px; margin: 0 auto;">
+        <tr><th>Value</th><th>Count</th></tr>
+        {% for d in default_denoms %}
+        <tr>
+            <td>{{ d }}</td>
+            <td><input type="number" name="denom_{{ d }}" value="0" min="0" style="width: 60px;"></td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="form-group" style="margin-top: 15px;">
+        <label for="cash_paid">Cash paid by customer</label>
+        <input type="number" id="cash_paid" name="cash_paid" placeholder="Amount" step="0.01" min="0" required>
+    </div>
+
+    <div class="actions">
+        <a href="/billing" class="btn">Cancel</a>
+        <button type="submit" class="btn btn-primary">Generate Bill</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let rowIndex = 1;
+
+function addProductRow() {
+    const container = document.getElementById('product-rows');
+    const div = document.createElement('div');
+    div.className = 'form-group product-row';
+    div.innerHTML = `
+        <label>Product ID</label>
+        <input type="text" name="product_id_${rowIndex}" placeholder="Product ID" required list="product-list">
+        <label style="width: auto; margin-left: 10px;">Quantity</label>
+        <input type="number" name="quantity_${rowIndex}" placeholder="Quantity" min="1" value="1" required style="width: 80px;">
+        <button type="button" onclick="removeRow(this)" style="margin-left: 5px;">X</button>
+    `;
+    container.appendChild(div);
+    rowIndex++;
+}
+
+function removeRow(btn) {
+    const rows = document.querySelectorAll('.product-row');
+    if (rows.length > 1) {
+        btn.parentElement.remove();
+        // Re-index remaining rows
+        const remaining = document.querySelectorAll('.product-row');
+        remaining.forEach((row, i) => {
+            row.querySelector('input[type="text"]').name = `product_id_${i}`;
+            row.querySelector('input[type="number"]').name = `quantity_${i}`;
+        });
+        rowIndex = remaining.length;
+    }
+}
+</script>
+{% endblock %}
