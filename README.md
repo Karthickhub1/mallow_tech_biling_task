@@ -30,7 +30,13 @@ pip install -r requirements.txt
 
 Edit `.env` file to configure SMTP settings for email functionality. Email sending is optional - the app works without it.
 
-### 4. Seed the database
+### 4. Migrate Table
+
+```bash
+alembic upgrade head
+```
+
+### 4.1 Seed the database
 
 ```bash
 python seed.py
