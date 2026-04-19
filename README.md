@@ -33,7 +33,10 @@ Edit `.env` file to configure SMTP settings for email functionality. Email sendi
 ### 4. Migrate Table
 
 ```bash
-alembic upgrade head
+alembic revision --autogenerate -m "Migration Message"   # for create a migration
+alembic upgrade head  # for migrate to latest
+alembic downgrade -1  # rool back the migration 1 step backword
+alembic history  # show the history of migration    
 ```
 
 ### 4.1 Seed the database
