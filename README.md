@@ -24,6 +24,9 @@ venv\Scripts\activate      # Windows
 
 ```bash
 pip install -r requirements.txt
+
+# fastapi-mail is missing issue pls run
+pip install fastapi-mail
 ```
 
 ### 3. Configure environment (optional)
